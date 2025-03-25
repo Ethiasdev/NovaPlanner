@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "ethiasdev/novaplanner",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "NovaPlanner - Modern appointment booking system built with Laravel.",
     "keywords": [
         "laravel",
         "framework"
