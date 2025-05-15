@@ -158,4 +158,59 @@ class AppointmentController extends Controller
         
         return 'Test email verzonden!';
     }
+    
+    /**
+     * Export appointments to CSV
+     */
+    public function exportCsv(Request $request)
+    {
+        $query = Appointment::query();
+        
+        // Apply filters if provided
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+        
+        if ($request->has('date_from') && $request->date_from !== '') {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        
+        if ($request->has('date_to') && $request->date_to !== '') {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+        
+        $appointments = $query->orderBy('date')->get();
+        
+        $filename = 'appointments_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+        
+        $callback = function() use ($appointments) {
+            $file = fopen('php://output', 'w');
+            
+            // Add CSV headers
+            fputcsv($file, ['Name', 'Email', 'Phone', 'Date', 'Time', 'Status', 'Notes', 'Created At']);
+            
+            // Add appointment data
+            foreach ($appointments as $appointment) {
+                fputcsv($file, [
+                    $appointment->name,
+                    $appointment->email,
+                    $appointment->phone,
+                    $appointment->date->format('Y-m-d'),
+                    $appointment->time->format('H:i'),
+                    $appointment->status,
+                    $appointment->notes,
+                    $appointment->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
+    }
 }
