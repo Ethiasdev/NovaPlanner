@@ -49,4 +49,28 @@ class Appointment extends Model
             default => 'bg-gray-100 text-gray-800 border border-gray-300',
         };
     }
+    
+    /**
+     * Check if appointment is upcoming (within next 24 hours)
+     */
+    public function isUpcoming()
+    {
+        return $this->date->isToday() || $this->date->isTomorrow();
+    }
+    
+    /**
+     * Scope for today's appointments
+     */
+    public function scopeToday($query)
+    {
+        return $query->whereDate('date', today());
+    }
+    
+    /**
+     * Scope for upcoming appointments
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('date', '>=', today());
+    }
 }
