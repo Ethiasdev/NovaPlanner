@@ -75,8 +75,21 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request data
-        $validated = $request->validate([
+        // Step 1: Sanitize input data first
+        $sanitizedData = [];
+        foreach ($request->all() as $key => $value) {
+            if (is_string($value)) {
+                $sanitizedData[$key] = trim(strip_tags($value));
+            } else {
+                $sanitizedData[$key] = $value;
+            }
+        }
+        
+        // Step 2: Create new request with sanitized data for validation
+        $sanitizedRequest = new Request($sanitizedData);
+        
+        // Step 3: Validate the sanitized data
+        $validated = $sanitizedRequest->validate([
             'name' => 'required|string|max:255|min:2',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20|regex:/^[0-9\s\-\+\(\)]+$/',
@@ -110,7 +123,7 @@ class AppointmentController extends Controller
                 ->withErrors(['time' => 'Dit tijdslot is al geboekt. Kies een ander tijdstip.']);
         }
         
-        // Create the appointment
+        // Step 4: Now use the validated (and sanitized) data
         $appointment = Appointment::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
