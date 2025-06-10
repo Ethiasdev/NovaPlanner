@@ -75,7 +75,17 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the request data
+        // NEW: Sanitize input data to prevent XSS
+        $sanitizedData = [];
+        foreach ($request->all() as $key => $value) {
+            if (is_string($value)) {
+                $sanitizedData[$key] = trim(strip_tags($value));
+            } else {
+                $sanitizedData[$key] = $value;
+            }
+        }
+        
+       
         $validated = $request->validate([
             'name' => 'required|string|max:255|min:2',
             'email' => 'required|email|max:255',
@@ -112,12 +122,12 @@ class AppointmentController extends Controller
         
         // Create the appointment
         $appointment = Appointment::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'date' => $validated['date'],
-            'time' => $validated['time'],
-            'notes' => $validated['notes'] ?? null,
+            'name' => $sanitizedData['name'],
+            'email' => $sanitizedData['email'],
+            'phone' => $sanitizedData['phone'] ?? null,
+            'date' => $sanitizedData['date'],
+            'time' => $sanitizedData['time'],
+            'notes' => $sanitizedData['notes'] ?? null,
             'status' => 'nieuw',
         ]);
         
