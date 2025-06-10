@@ -77,13 +77,26 @@ class AppointmentController extends Controller
     {
         // Validate the request data
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|min:2',
             'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20|regex:/^[0-9\s\-\+\(\)]+$/',
             'date' => 'required|date|after_or_equal:today',
-            'time' => 'required|string',
-            'notes' => 'nullable|string',
+            'time' => 'required|string|regex:/^\d{2}:\d{2}$/',
+            'notes' => 'nullable|string|max:500',
+        ], [
+            'name.min' => 'Naam moet minimaal 2 karakters lang zijn.',
+            'phone.regex' => 'Voer een geldig telefoonnummer in.',
+            'time.regex' => 'Selecteer een geldige tijd.',
+            'notes.max' => 'Opmerkingen mogen maximaal 500 karakters bevatten.',
         ]);
+        
+        // Check if the selected date is a weekend (Saturday or Sunday)
+        $selectedDate = Carbon::parse($validated['date']);
+        if ($selectedDate->isWeekend()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['date' => 'Afspraken kunnen alleen doordeweeks worden ingepland (maandag t/m vrijdag).']);
+        }
         
         // Check if there's already a confirmed appointment at this date and time
         $existingAppointment = Appointment::where('date', $validated['date'])
