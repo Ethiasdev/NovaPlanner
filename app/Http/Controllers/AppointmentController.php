@@ -92,13 +92,13 @@ class AppointmentController extends Controller
         $validated = $sanitizedRequest->validate([
             'name' => 'required|string|max:255|min:2',
             'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20|regex:/^[0-9\s\-\+\(\)]+$/',
+            'phone' => 'nullable|string|max:20|regex:/^(\+31[\s\-]?|0031[\s\-]?|0)[1-9][\s\-]?[0-9]{2}[\s\-]?[0-9]{3}[\s\-]?[0-9]{3,4}$/',
             'date' => 'required|date|after_or_equal:today',
             'time' => 'required|string|regex:/^\d{2}:\d{2}$/',
             'notes' => 'nullable|string|max:500',
         ], [
             'name.min' => 'Naam moet minimaal 2 karakters lang zijn.',
-            'phone.regex' => 'Voer een geldig telefoonnummer in.',
+            'phone.regex' => 'Voer een geldig Nederlands mobiel nummer in (06xxxxxxxx).',
             'time.regex' => 'Selecteer een geldige tijd.',
             'notes.max' => 'Opmerkingen mogen maximaal 500 karakters bevatten.',
         ]);
